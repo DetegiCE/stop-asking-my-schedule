@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stop Asking My Schedule</title>
+    <!-- fullcalender -->
+    <link href='/resources/fullcalendar-5.6.0/lib/main.css' rel='stylesheet' />
+    <script src='/resources/fullcalendar-5.6.0/lib/main.js'></script>
+    <script src="http://code.jquery.com/jquery.min.js"></script>
+    <script>
+        function calendarLoad(dday) {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                timeZone: 'KST',
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev today',
+                    center: 'title',
+                    right: 'next'
+                },
+                events: dday,
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: false,
+                    hour12: false
+                }
+            });
+            calendar.render();
+        }
+        function getDdays(callback) {
+            var issueUrl = 'https://api.github.com/repos/DetegiCE/stop-asking-my-schedule/issues';
+            var commentUrl = '';
+            var dday = [];
+            $.getJSON(issueUrl, function (data) {
+                for (var i = 1; i <= data.length; i++) {
+                    commentUrl = 'https://api.github.com/repos/DetegiCE/stop-asking-my-schedule/issues/' + i + '/comments';
+                    $.getJSON(commentUrl, function (data) {
+                        if (data.length > 0) {
+                            var commentBody = data[0]['body'];
+                            var datas = commentBody.split('\r\n');
+
+                            function dateFmtng(str) {
+                                var v1 = str.substr(0, 4);
+                                var v2 = str.substr(4, 2);
+                                var v3 = str.substr(6, 2);
+                                var v4 = str.substr(8, 2);
+                                var v5 = str.substr(10, 2);
+                                return v1 + '-' + v2 + '-' + v3 + 'T' + v4 + ':' + v5 + ':00';
+                            }
+
+                            for (var i = 0; i < datas.length; i++) {
+                                dday.push({
+                                    'title': datas[i].split(' ')[1],
+                                    'start': dateFmtng(datas[i].split(' ')[0].split('-')[0]),
+                                    'end': dateFmtng(datas[i].split(' ')[0].split('-')[1])
+                                });
+                            }
+                            console.log(datas);
+                            console.log(dday);
+                        }
+                    });
+                }
+            });
+            callback(dday);
+        }
+        document.addEventListener('DOMContentLoaded', getDdays(calendarLoad));
+    </script>
+</head>
+<body>
+    <div id="calendar"></div>
+</body>
+</html>
