@@ -1,10 +1,12 @@
 name: generate-week-issue
 
 on:
-  schedule:
-  - cron: "30 15 * * 6"
+  # schedule:
+  # - cron: "30 15 * * 6"
   # UTC SAT 15:30 = KST SUN 00:30
-  workflow_dispatch:
+  # workflow_dispatch:
+  push:
+    branches: main
 
 jobs:
   build:
